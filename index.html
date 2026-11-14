@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>CAPES Maths 2027 — Préparation</title>
+  
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Rendu mathématique KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Nos feuilles de style -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div class="app-container">
+    <nav class="sidebar" aria-label="Navigation principale">
+      <div class="brand">
+        <span class="brand-icon">∑</span>
+        <div class="brand-text">
+          <strong>CAPES Maths</strong>
+          <small>Session 2027</small>
+        </div>
+      </div>
+
+      <ul class="nav-list">
+        <li><a href="#dashboard" class="nav-link" data-route="dashboard">📊 Tableau de bord</a></li>
+        <li><a href="#programme" class="nav-link" data-route="programme">📚 Programme</a></li>
+        <li><a href="#exercices" class="nav-link" data-route="exercices">✍️ Exercices</a></li>
+        <li><a href="#parametres" class="nav-link" data-route="parametres">⚙️ Données</a></li>
+      </ul>
+    </nav>
+
+    <main id="app-view" class="main-content"></main>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+
+  <!-- Enregistrement du Service Worker pour le mode PWA / Hors-ligne -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .catch((err) => console.warn('Service Worker non enregistré :', err));
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "exercices": [
+    {
+      "id": "exo-alg-001",
+      "titre": "Ordre d'un élément dans un groupe fini",
+      "domaineId": "algebre",
+      "chapitreId": "alg-structures",
+      "notionIds": ["grp-sous-groupes"],
+      "difficulte": 1,
+      "dureeEstimeeMinutes": 15,
+      "type": "Application directe",
+      "enonce": "Soit $(G, \\cdot)$ un groupe fini de cardinal $n$ et d'élément neutre $e_G$. Montrer que pour tout $x \\in G$, on a $x^n = e_G$.",
+      "indices": [
+        "Considérer le sous-groupe engendré par $x$, noté $\\langle x \\rangle = \\{x^k, k \\in \\mathbb{Z}\\}$.",
+        "Relier le cardinal de $\\langle x \\rangle$ à l'ordre de l'élément $x$, puis appliquer le théorème de Lagrange."
+      ],
+      "correction": "Soit $x \\in G$. L'ensemble $H = \\langle x \\rangle$ est un sous-groupe de $G$. Comme $G$ est fini, $H$ est fini et son cardinal $d = |H|$ est par définition l'ordre de $x$ (le plus petit entier $d \\ge 1$ tel que $x^d = e_G$).<br><br>D'après le **théorème de Lagrange**, $d$ divise $n = |G|$. Il existe donc $k \\in \\mathbb{N}^*$ tel que $n = kd$.<br><br>On en déduit : $$x^n = x^{kd} = (x^d)^k = e_G^k = e_G.$$"
+    },
+    {
+      "id": "exo-alg-002",
+      "titre": "Diagonalisation par polynôme annulateur",
+      "domaineId": "algebre",
+      "chapitreId": "alg-lineaire",
+      "notionIds": ["red-diagonalisation"],
+      "difficulte": 2,
+      "dureeEstimeeMinutes": 25,
+      "type": "Méthode classique",
+      "enonce": "Soit $E$ un $\\mathbb{R}$-espace vectoriel de dimension finie et $u \\in \\mathcal{L}(E)$ vérifiant $u^3 - u = 0$. Montrer que $u$ est diagonalisable et déterminer ses valeurs propres possibles.",
+      "indices": [
+        "Factoriser le polynôme $P(X) = X^3 - X$ dans $\\mathbb{R}[X]$.",
+        "Les racines de ce polynôme annulateur sont-elles simples ?"
+      ],
+      "correction": "Le polynôme $P(X) = X^3 - X = X(X - 1)(X + 1)$ est un polynôme annulateur de $u$.<br><br>Il est scindé sur $\\mathbb{R}$ et à **racines simples** ($0$, $1$ et $-1$). Par théorème, $u$ est donc diagonalisable.<br><br>De plus, toute valeur propre de $u$ est racine de tout polynôme annulateur de $u$, donc $\\mathrm{Sp}(u) \\subset \\{-1, 0, 1\\}$."
+    },
+    {
+      "id": "exo-ana-001",
+      "titre": "Nature d'une série numérique par équivalent",
+      "domaineId": "analyse",
+      "chapitreId": "ana-series",
+      "notionIds": ["ser-positifs"],
+      "difficulte": 2,
+      "dureeEstimeeMinutes": 20,
+      "type": "Calcul & Rédaction",
+      "enonce": "Déterminer la nature de la série de terme général : $$u_n = \\ln\\left(1 + \\frac{1}{n^2}\\right) \\quad (n \\ge 1).$$",
+      "indices": [
+        "Vérifier le signe de $u_n$ pour $n \\ge 1$.",
+        "Utiliser un développement limité ou un équivalent usuel de $\\ln(1+x)$ lorsque $x \\to 0$."
+      ],
+      "correction": "Pour tout $n \\ge 1$, $\\frac{1}{n^2} > 0$, donc $1 + \\frac{1}{n^2} > 1$, ce qui assure que $u_n > 0$ (série à termes positifs).<br><br>Lorsque $n \\to +\\infty$, $\\frac{1}{n^2} \\to 0$, donc : $$u_n \\underset{n\\to+\\infty}{\\sim} \\frac{1}{n^2}.$$<br>Or la série de Riemann $\\sum_{n \\ge 1} \\frac{1}{n^2}$ converge (car $\\alpha = 2 > 1$). Par critère d'équivalence pour les séries à termes positifs, la série $\\sum u_n$ est **convergente**."
+    }
+  ]
+}

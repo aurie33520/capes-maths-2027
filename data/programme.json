@@ -1,0 +1,90 @@
+{
+  "domaines": [
+    {
+      "id": "algebre",
+      "titre": "Algèbre et arithmétique",
+      "chapitres": [
+        {
+          "id": "alg-structures",
+          "titre": "Groupes, anneaux et corps",
+          "notions": [
+            {
+              "id": "grp-sous-groupes",
+              "titre": "Sous-groupes et théorème de Lagrange",
+              "prerequis": ["Loi de composition interne", "Divisibilité dans $\\mathbb{Z}$"],
+              "definitions": [
+                "Soit $(G, *)$ un groupe. Une partie $H \\subset G$ est un sous-groupe si $e_G \\in H$ et $\\forall (x,y) \\in H^2, x * y^{-1} \\in H$."
+              ],
+              "theoremes": [
+                "Théorème de Lagrange : Si $G$ est un groupe fini et $H$ un sous-groupe de $G$, alors $|H|$ divise $|G|$."
+              ],
+              "methodes": [
+                "Pour montrer qu'un ensemble est un groupe, montrer que c'est un sous-groupe d'un groupe de référence (ex: $GL_n(\\mathbb{R})$, $(\\mathbb{C}^*, \\times)$)."
+              ]
+            },
+            {
+              "id": "ann-ideaux",
+              "titre": "Idéaux et anneaux principaux ($\\mathbb{Z}$, $\\mathbb{K}[X]$)",
+              "prerequis": ["Division euclidienne", "Structures d'anneau"],
+              "definitions": [
+                "Un idéal $I$ d'un anneau commutatif $A$ est un sous-groupe additif absorbant : $\\forall a \\in A, \\forall x \\in I, ax \\in I$."
+              ],
+              "theoremes": [
+                "$\\mathbb{Z}$ et $\\mathbb{K}[X]$ (avec $\\mathbb{K}$ un corps) sont des anneaux principaux : tout idéal est engendré par un unique élément (au signe ou à un scalaire près)."
+              ],
+              "methodes": [
+                "Utiliser l'identité de Bézout pour prouver que deux entiers ou deux polynômes sont premiers entre eux."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "alg-lineaire",
+          "titre": "Réduction des endomorphismes",
+          "notions": [
+            {
+              "id": "red-diagonalisation",
+              "titre": "Valeurs propres, sous-espaces propres et diagonalisation",
+              "prerequis": ["Applications linéaires en dimension finie", "Polynômes"],
+              "definitions": [
+                "$\\lambda \\in \\mathbb{K}$ est valeur propre de $u$ s'il existe $x \\neq 0$ tel que $u(x) = \\lambda x$."
+              ],
+              "theoremes": [
+                "Un endomorphisme en dimension finie $n$ est diagonalisable si et seulement si la somme des dimensions de ses sous-espaces propres vaut $n$."
+              ],
+              "methodes": [
+                "Si un polynôme scindé à racines simples annule $u$, alors $u$ est immédiatement diagonalisable sans calcul de déterminant."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "analyse",
+      "titre": "Analyse",
+      "chapitres": [
+        {
+          "id": "ana-series",
+          "titre": "Séries numériques",
+          "notions": [
+            {
+              "id": "ser-positifs",
+              "titre": "Séries à termes positifs et critères de comparaison",
+              "prerequis": ["Suites numériques", "Équivalents et négligeabilité"],
+              "definitions": [
+                "La série $\\sum u_n$ converge si la suite des sommes partielles $S_N = \\sum_{n=0}^N u_n$ admet une limite finie."
+              ],
+              "theoremes": [
+                "Règle de Riemann : $\\sum \\frac{1}{n^\\alpha}$ converge si et seulement si $\\alpha > 1$."
+              ],
+              "methodes": [
+                "Toujours vérifier d'abord que le terme général $u_n \\to 0$ (condition nécessaire de convergence)."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

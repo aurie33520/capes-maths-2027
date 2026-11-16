@@ -1,18 +1,41 @@
 const STORAGE_KEY = 'capes_maths_2027_state';
 
 const defaultUserState = {
-  version: '1.0',
+  version: '1.1',
   objectifHebdoMinutes: 360,
   sessions: [],
-  maitriseNotions: {},
-  historiqueExercices: {} // { [exoId]: { tentatives: 1, dernierStatut: 'success'|'partial'|'failed', date: 'ISO' } }
+  maitriseNotions: {},      // { [notionId]: { statut, notes, updatedAt, intervalDays, nextReviewDate } }
+  historiqueExercices: {},  // { [exoId]: { tentatives, dernierStatut, date, intervalDays, nextReviewDate } }
+  erreurs: []               // [{ id, date, exoId, notionId, domaineId, type, description, resolved }]
 };
 
+// Calcul de la prochaine date de révision (Répétition espacée simplifiée type SM-2)
+function computeNextReview(status, currentInterval = 0) {
+  let nextInterval = 1;
+  if (status === 'review' || status === 'failed') {
+    nextInterval = 1; // Revoir dès demain
+  } else if (status === 'progress' || status === 'partial') {
+    nextInterval = 3; // Revoir dans 3 jours
+  } else if (status === 'mastered' || status === 'success') {
+    if (currentInterval <= 1) nextInterval = 7;
+    else if (currentInterval <= 7) nextInterval = 15;
+    else nextInterval = Math.min(60, Math.round(currentInterval * 2));
+  }
+
+  const nextDate = new Date();
+  nextDate.setDate(nextDate.getDate() + nextInterval);
+  return {
+    intervalDays: nextInterval,
+    nextReviewDate: nextDate.toISOString().split('T')[0]
+  };
+}
+
 class Store {
-  constructor() {
+    constructor() {
     this.programme = { domaines: [] };
     this.exercices = [];
     this.userState = this.loadUserState();
+    this.pendingNavigation = null; // Permet d'ouvrir directement une notion ou un exercice depuis une autre vue
   }
 
   async init() {
@@ -36,7 +59,12 @@ class Store {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return structuredClone(defaultUserState);
     try {
-      return { ...structuredClone(defaultUserState), ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      return {
+        ...structuredClone(defaultUserState),
+        ...parsed,
+        erreurs: Array.isArray(parsed.erreurs) ? parsed.erreurs : []
+      };
     } catch {
       return structuredClone(defaultUserState);
     }
@@ -52,16 +80,23 @@ class Store {
     return this.userState.maitriseNotions[notionId] || {
       statut: 'todo',
       notes: '',
-      updatedAt: null
+      updatedAt: null,
+      intervalDays: 0,
+      nextReviewDate: null
     };
   }
 
   setNotionStatus(notionId, statut) {
     const current = this.getNotionProgress(notionId);
+    const schedule = statut === 'todo'
+      ? { intervalDays: 0, nextReviewDate: null }
+      : computeNextReview(statut, current.intervalDays);
+
     this.userState.maitriseNotions[notionId] = {
       ...current,
       statut,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      ...schedule
     };
     this.saveUserState();
   }
@@ -88,24 +123,111 @@ class Store {
     return null;
   }
 
+  findChapitreById(chapitreId) {
+    for (const domaine of this.programme.domaines) {
+      const chapitre = domaine.chapitres.find(c => c.id === chapitreId);
+      if (chapitre) {
+        return { chapitre, domaine };
+      }
+    }
+    return null;
+  }
+
+  getNotionsForExercise(exo) {
+    if (!exo || !Array.isArray(exo.notionIds)) return [];
+    return exo.notionIds
+      .map(id => this.findNotionById(id))
+      .filter(Boolean);
+  }
+
+  getExercisesForNotion(notionId) {
+    return this.exercices.filter(
+      exo => Array.isArray(exo.notionIds) && exo.notionIds.includes(notionId)
+    );
+  }
+
+
   // --- GESTION DES EXERCICES ---
 
   getExerciseProgress(exoId) {
     return this.userState.historiqueExercices[exoId] || {
       tentatives: 0,
       dernierStatut: 'todo',
-      date: null
+      date: null,
+      intervalDays: 0,
+      nextReviewDate: null
     };
   }
 
   setExerciseResult(exoId, statut) {
     const current = this.getExerciseProgress(exoId);
+    const schedule = computeNextReview(statut, current.intervalDays);
+
     this.userState.historiqueExercices[exoId] = {
       tentatives: current.tentatives + 1,
       dernierStatut: statut,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      ...schedule
     };
     this.saveUserState();
+  }
+
+  // --- CARNET D'ERREURS ---
+
+  addError({ exoId = null, notionId = null, domaineId = 'algebre', type, description }) {
+    const today = new Date().toISOString().split('T')[0];
+    this.userState.erreurs.unshift({
+      id: Date.now().toString(),
+      date: today,
+      exoId,
+      notionId,
+      domaineId,
+      type,
+      description,
+      resolved: false
+    });
+    this.saveUserState();
+  }
+
+  toggleErrorResolved(errorId) {
+    const err = this.userState.erreurs.find(e => e.id === errorId);
+    if (err) {
+      err.resolved = !err.resolved;
+      this.saveUserState();
+    }
+  }
+
+  deleteError(errorId) {
+    this.userState.erreurs = this.userState.erreurs.filter(e => e.id !== errorId);
+    this.saveUserState();
+  }
+
+  // --- RÉPÉTITION ESPACÉE : RÉVISIONS DUES AUJOURD'HUI ---
+
+  getDueReviews() {
+    const today = new Date().toISOString().split('T')[0];
+    const dueNotions = [];
+    const dueExercises = [];
+
+    for (const domaine of this.programme.domaines) {
+      for (const chapitre of domaine.chapitres) {
+        for (const notion of chapitre.notions) {
+          const prog = this.getNotionProgress(notion.id);
+          if (prog.nextReviewDate && prog.nextReviewDate <= today) {
+            dueNotions.push({ notion, chapitreTitre: chapitre.titre, domaineTitre: domaine.titre, prog });
+          }
+        }
+      }
+    }
+
+    for (const exo of this.exercices) {
+      const prog = this.getExerciseProgress(exo.id);
+      if (prog.nextReviewDate && prog.nextReviewDate <= today) {
+        dueExercises.push({ exo, prog });
+      }
+    }
+
+    return { dueNotions, dueExercises };
   }
 
   // --- GESTION DU TEMPS DE TRAVAIL ---
@@ -184,6 +306,7 @@ class Store {
     }
 
     const totalMinutesAllTime = this.userState.sessions.reduce((acc, s) => acc + s.dureeMinutes, 0);
+    const activeErrorsCount = this.userState.erreurs.filter(e => !e.resolved).length;
 
     return {
       totalNotions,
@@ -194,7 +317,8 @@ class Store {
       priorityNotions,
       weeklyMinutes: this.getWeeklyMinutes(),
       weeklyGoal: this.userState.objectifHebdoMinutes,
-      totalMinutesAllTime
+      totalMinutesAllTime,
+      activeErrorsCount
     };
   }
 
@@ -218,7 +342,11 @@ class Store {
     if (!parsed || typeof parsed !== 'object' || !parsed.maitriseNotions) {
       throw new Error('Format de fichier invalide.');
     }
-    this.userState = { ...structuredClone(defaultUserState), ...parsed };
+    this.userState = {
+      ...structuredClone(defaultUserState),
+      ...parsed,
+      erreurs: Array.isArray(parsed.erreurs) ? parsed.erreurs : []
+    };
     this.saveUserState();
   }
 }

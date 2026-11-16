@@ -8,6 +8,8 @@ function formatHours(minutes) {
 
 export function renderDashboard(container, rerenderMath) {
   const stats = store.getStats();
+  const { dueNotions, dueExercises } = store.getDueReviews();
+  const totalDue = dueNotions.length + dueExercises.length;
   const weeklyPercent = Math.min(100, Math.round((stats.weeklyMinutes / stats.weeklyGoal) * 100));
 
   const domainOptions = store.programme.domaines
@@ -26,19 +28,28 @@ export function renderDashboard(container, rerenderMath) {
     </div>
   `).join('');
 
-  const priorityHTML = stats.priorityNotions.length > 0
+  const dueHTML = totalDue > 0
     ? `<ul class="notion-list" style="border-top: none;">
-        ${stats.priorityNotions.map(item => `
-          <li class="notion-item" style="padding-left: 0; padding-right: 0;" data-goto-notion="${item.notion.id}">
+        ${dueNotions.map(item => `
+          <li class="notion-item" style="padding-left: 0; padding-right: 0;" data-goto="programme">
             <div>
-              <span class="chapter-domain-tag">${item.domaineTitre} • ${item.chapitreTitre}</span>
+              <span class="chapter-domain-tag">Notion • ${item.domaineTitre}</span>
               <strong>${item.notion.titre}</strong>
             </div>
-            <span class="badge badge-review">À revoir</span>
+            <span class="badge badge-progress">À réviser</span>
+          </li>
+        `).join('')}
+        ${dueExercises.map(item => `
+          <li class="notion-item" style="padding-left: 0; padding-right: 0;" data-goto="exercices">
+            <div>
+              <span class="chapter-domain-tag">Exercice • ${item.exo.type}</span>
+              <strong>${item.exo.titre}</strong>
+            </div>
+            <span class="badge badge-review">À refaire</span>
           </li>
         `).join('')}
       </ul>`
-    : `<p style="color: var(--text-muted); font-size: 0.95rem;">Aucune notion marquée "À revoir" pour le moment. Continue comme ça !</p>`;
+    : `<p style="color: var(--text-muted); font-size: 0.95rem;">Aucune révision programmée n'est en retard aujourd'hui. Tu peux avancer sur un nouveau chapitre !</p>`;
 
   container.innerHTML = `
     <div class="page-header">
@@ -46,7 +57,6 @@ export function renderDashboard(container, rerenderMath) {
       <p>Suivi de ta préparation au CAPES externe 2027.</p>
     </div>
 
-    <!-- Indicateurs clés -->
     <div class="kpi-grid">
       <div class="card kpi-card">
         <span class="kpi-label">Objectif cette semaine</span>
@@ -63,13 +73,12 @@ export function renderDashboard(container, rerenderMath) {
       </div>
 
       <div class="card kpi-card">
-        <span class="kpi-label">Temps cumulé total</span>
-        <div class="kpi-value">${formatHours(stats.totalMinutesAllTime)}</div>
-        <span class="kpi-sub">${store.userState.sessions.length} session(s) enregistrée(s)</span>
+        <span class="kpi-label">Révisions du jour</span>
+        <div class="kpi-value">${totalDue}</div>
+        <span class="kpi-sub">${stats.activeErrorsCount} erreur(s) active(s) dans le carnet</span>
       </div>
     </div>
 
-    <!-- Ajout rapide d'une session de travail -->
     <div class="card">
       <h2 style="font-size: 1.1rem; margin-bottom: 0.25rem;">Enregistrer une séance de travail</h2>
       <p style="font-size: 0.85rem; color: var(--text-muted);">Note le temps passé à réviser ou faire des exercices aujourd'hui.</p>
@@ -89,21 +98,19 @@ export function renderDashboard(container, rerenderMath) {
       </form>
     </div>
 
-    <!-- Progression par domaine & Priorités -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+      <div class="card">
+        <h2 style="font-size: 1.1rem; margin-bottom: 0.75rem;">📅 Révisions dues aujourd'hui (Répétition espacée)</h2>
+        ${dueHTML}
+      </div>
+
       <div class="card">
         <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Avancement par domaine</h2>
         ${domainsHTML}
       </div>
-
-      <div class="card">
-        <h2 style="font-size: 1.1rem; margin-bottom: 0.75rem;">Notions prioritaires à revoir</h2>
-        ${priorityHTML}
-      </div>
     </div>
   `;
 
-  // Événement d'ajout de session
   document.getElementById('add-session-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const domain = document.getElementById('session-domain').value;
@@ -114,10 +121,9 @@ export function renderDashboard(container, rerenderMath) {
     renderDashboard(container, rerenderMath);
   });
 
-  // Clic sur une notion prioritaire -> bascule vers l'onglet Programme
-  document.querySelectorAll('[data-goto-notion]').forEach(el => {
+  document.querySelectorAll('[data-goto]').forEach(el => {
     el.addEventListener('click', () => {
-      window.location.hash = 'programme';
+      window.location.hash = el.dataset.goto;
     });
   });
 

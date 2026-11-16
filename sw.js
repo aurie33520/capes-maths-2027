@@ -1,4 +1,4 @@
-const CACHE_NAME = 'capes-maths-v1';
+const CACHE_NAME = 'capes-maths-v3';
 
 // Liste des fichiers essentiels de l'application à mettre en cache
 const ASSETS_TO_CACHE = [
@@ -15,7 +15,9 @@ const ASSETS_TO_CACHE = [
   './js/views/dashboard.js',
   './js/views/syllabus.js',
   './js/views/exercises.js',
-  './js/views/settings.js'
+  './js/views/settings.js',
+  './js/views/errors.js',
+  './js/views/mock-exam.js'
 ];
 
 // Installation : mise en cache initiale

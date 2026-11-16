@@ -3,6 +3,9 @@ import { renderSyllabus } from './views/syllabus.js';
 import { renderDashboard } from './views/dashboard.js';
 import { renderSettings } from './views/settings.js';
 import { renderExercises } from './views/exercises.js';
+import { renderErrors } from './views/errors.js';
+import { renderMockExam } from './views/mock-exam.js';
+
 
 const placeholderViews = {
   dashboard: (container) => {
@@ -64,6 +67,12 @@ function router() {
       break;
     case 'parametres':
       renderSettings(viewContainer);
+      break;
+    case 'erreurs':
+      renderErrors(viewContainer, mathCallback);
+      break;
+    case 'sujets':
+      renderMockExam(viewContainer, mathCallback);
       break;
     case 'dashboard':
     default:
